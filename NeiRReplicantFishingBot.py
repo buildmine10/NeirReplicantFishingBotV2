@@ -135,6 +135,7 @@ def setup():
     print("Press i to toggle bot activation.")
     print("Press o to stop program.")
     print("Attempt counter will reset each time the bot is started.")
+    print("Approach the water before starting.")
     print()
 
 setup()

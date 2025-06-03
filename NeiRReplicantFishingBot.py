@@ -8,84 +8,6 @@ import time
 from enum import Enum
 
 
-def fft_gaussian_blur(image, sigma):
-    # Ensure float32 for precision
-    image = np.float32(image)
-
-    rows, cols = image.shape[0], image.shape[1]
-    crow, ccol = rows // 2, cols // 2
-
-    # Create meshgrid
-    x = np.linspace(-ccol, ccol, cols)
-    y = np.linspace(-crow, crow, rows)
-    x, y = np.meshgrid(x, y)
-
-    # Gaussian low-pass filter mask in frequency domain
-    gaussian_mask = np.exp(-(x**2 + y**2) / (2 * sigma**2))
-
-     # If image is color, apply per channel
-    if image.ndim == 3:
-        blurred = np.zeros_like(image)
-        for c in range(3):
-            f = fft2(image[:, :, c])
-            fshift = fftshift(f)
-            f_filtered = fshift * gaussian_mask
-            f_ishift = ifftshift(f_filtered)
-            img_back = np.abs(ifft2(f_ishift))
-            blurred[:, :, c] = np.clip(img_back, 0, 255)
-        return np.uint8(blurred)
-    else:
-        f = fft2(image)
-        fshift = fftshift(f)
-        f_filtered = fshift * gaussian_mask
-        f_ishift = ifftshift(f_filtered)
-        img_back = np.abs(ifft2(f_ishift))
-        return np.uint8(np.clip(img_back, 0, 255))
-
-
-
-def downscale_blur_upscale(image, sigma, scale_factor=0.25):
-
-    # Step 1: Downscale
-    small = cv2.resize(image, (0, 0), fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_AREA)
-
-    # Step 2: Blur using FFT
-    blurred_small = fft_gaussian_blur(small, sigma=sigma * scale_factor)
-
-    # Step 3: Upscale back to original size
-    blurred = cv2.resize(blurred_small, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_LINEAR)
-
-    return blurred
-
-
-def downscale_blur(image, sigma, scale_factor=0.25):
-
-    # Step 1: Downscale
-    small = cv2.resize(image, (0, 0), fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_AREA)
-
-    # Step 2: Apply FFT-based blur
-    blurred = fft_gaussian_blur(small, sigma=sigma * scale_factor)
-
-    return blurred
-
-
-def downscale_upscale(image, scale_factor=0.25):
-
-    # Step 1: Downscale
-    small = cv2.resize(image, (0, 0), fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_AREA)
-
-    # Step 3: Upscale back to original size
-    blurred = cv2.resize(small, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_LINEAR)
-
-    return blurred
-
-
-def downscale(image, scale_factor=0.25):
-
-    # Step 1: Downscale
-    small = cv2.resize(image, (0, 0), fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_AREA)
-
-    return small
 
 class State(Enum):
     IDLE = 0
@@ -172,7 +94,6 @@ def prompt_integer(message, default=None, min_value=None, max_value=None):
             print("Invalid input. Please enter a valid integer.\n")
 
 
-
 def setup():
     global screenResolution, gameResolution, baitNumber, numberOfAttempts
 
@@ -215,13 +136,8 @@ def setup():
     print("Press o to stop program.")
     print("Attempt counter will reset each time the bot is started.")
     print()
-    
-
 
 setup()
-
-
-
 
 
 attemptCounter = 0
